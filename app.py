@@ -2,6 +2,7 @@ import plotly.express as px
 from shiny.express import input, ui, render
 from shinywidgets import render_plotly
 import seaborn as sns
+from shiny import reactive
 import palmerpenguins
 
 ui.page_opts(title="Filling layout", fillable=True)
@@ -52,16 +53,31 @@ with ui.layout_columns():
 
         @render_plotly
         def histogram_plotly():
-            return px.histogram(penguins_df, x="bill_length_mm",nbins=input.plotly_bin_count())
+            return px.histogram(filtered_data(), x="bill_length_mm",nbins=input.plotly_bin_count())
     with ui.card(full_screen=True):
         ui.card_header("Plotly Histogram: Species")
 
         @render.plot
         def histogram_seaborn():
-            return sns.histplot(data=penguins_df,x="bill_length_mm",bins=input.seaborn_bin_count())
+            return sns.histplot(data=filtered_data(),x="bill_length_mm",bins=input.seaborn_bin_count())
     with ui.card(full_screen=True):
         ui.card_header("Plotly Scatterplot: Species")
 
         @render_plotly
         def plotly_scatterplot():
-            return px.scatter(data_frame=penguins_df,x="bill_length_mm", y="body_mass_g",color="species",hover_name="island",symbol="sex")
+            return px.scatter(data_frame=filtered_data(),x="bill_length_mm", y="body_mass_g",color="species",hover_name="island",symbol="sex")
+
+# --------------------------------------------------------
+# Reactive calculations and effects
+# --------------------------------------------------------
+
+# Add a reactive calculation to filter the data
+# By decorating the function with @reactive, we can use the function to filter the data
+# The function will be called whenever an input functions used to generate that output changes.
+# Any output that depends on the reactive function (e.g., filtered_data()) will be updated when the data changes.
+
+@reactive.calc
+def filtered_data():
+    
+    return penguins_df
+
