@@ -14,7 +14,7 @@ with ui.sidebar(open="open"):
     ui.h2("Sidebar")
     
     # Use ui.input_selectize() to create a dropdown input to choose a column
-    ui.input_selectize("selected_attribute","Selected Attribute",["choice 1","choice 2","choise 3"])
+    ui.input_selectize("selected_island","Selected Island",["Torgersen","Biscoe","Dream"])
     
     # Use ui.input_numeric() to create a numeric input for the number of Plotly histogram bins
     ui.input_numeric("plotly_bin_count","Plotly Bin Count",1,min=1)
@@ -37,13 +37,13 @@ with ui.layout_columns():
 
         @render.data_frame
         def species_data():
-            return penguins_df[penguins_df['species'].isin(input.selected_species_list())]
+            return render.DataTable(filtered_data())
 
         with ui.card(full_screen=True):
             ui.card_header("Data Grid")
             @render.data_frame
             def grid():
-               return render.DataGrid(data=penguins_df)
+               return render.DataGrid(data=filtered_data())
 
 
 
@@ -78,6 +78,14 @@ with ui.layout_columns():
 
 @reactive.calc
 def filtered_data():
-    
-    return penguins_df
+    selected_species = input.selected_species_list()
+    selected_island = [input.selected_island()]
+    selected_seaborn_bins = input.seaborn_bin_count()
+    selected_plotly_bins = input.plotly_bin_count()
 
+    isSpeciesMatch = penguins_df["species"].isin(selected_species)
+    isIslandMatch = penguins_df["island"].isin(selected_island)
+
+    filtered = penguins_df[isSpeciesMatch & isIslandMatch]
+    
+    return filtered
